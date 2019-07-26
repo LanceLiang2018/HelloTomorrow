@@ -1,4 +1,4 @@
-package hello.liang.lance.com;
+package hellotomorrow.liang.lance;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("hello.liang.lance.com", appContext.getPackageName());
+        assertEquals("hellotomorrow.liang.lance", appContext.getPackageName());
     }
 }

@@ -1,4 +1,4 @@
-package hello.liang.lance.com;
+package hellotomorrow.liang.lance;
 
 import org.junit.Test;
 
