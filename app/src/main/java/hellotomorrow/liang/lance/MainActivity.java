@@ -18,9 +18,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
 import com.lzy.okgo.callback.StringCallback;
 import com.lzy.okgo.model.Response;
 
@@ -31,6 +33,7 @@ import java.util.List;
 import java.util.logging.Logger;
 
 import hellotomorrow.liang.lance.jsons.Cards;
+import hellotomorrow.liang.lance.jsons.Data;
 import hellotomorrow.liang.lance.jsons.JsonRootBean;
 import io.reactivex.annotations.NonNull;
 
@@ -47,7 +50,8 @@ public class MainActivity extends AppCompatActivity {
      */
     private SectionsPagerAdapter mSectionsPagerAdapter;
     private JsonRootBean bean;
-    private int target_page = -1;
+    private int target_page = 0;
+    private FloatingActionButton fab;
 
     /**
      * The {@link ViewPager} that will host the section contents.
@@ -70,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         if (bean != null)
             mViewPager.setAdapter(mSectionsPagerAdapter);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -144,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
          * fragment.
          */
         private static final String ARG_SECTION_NUMBER = "section_number";
-        private int page = -1;
+        private int mCardId = -1;
         private Cards mCards;
 
         public PlaceholderFragment() {
@@ -154,14 +158,15 @@ public class MainActivity extends AppCompatActivity {
          * Returns a new instance of this fragment for the given section
          * number.
          */
-        public static PlaceholderFragment newInstance(int sectionNumber, Cards cards) {
+        public static PlaceholderFragment newInstance(int sectionNumber, Cards cards, int cardId) {
 //            Logger.getLogger("Hello").info("newInstance(sectionNumber=" + Integer.toString(sectionNumber) + ")");
             PlaceholderFragment fragment = new PlaceholderFragment();
             Bundle args = new Bundle();
             args.putInt(ARG_SECTION_NUMBER, sectionNumber);
             fragment.setArguments(args);
-            fragment.page = sectionNumber;
+//            fragment.page = sectionNumber;
             fragment.mCards = cards;
+            fragment.mCardId = cardId;
             return fragment;
         }
 
@@ -179,6 +184,21 @@ public class MainActivity extends AppCompatActivity {
             textView_content.setText(html);
 //            textView_content.setText(mCards.getMblog().getText());
             textView_time.setText(mCards.getMblog().getCreated_at());
+
+//            if (mCards.getMblog().getPage_info() != null && mCards.getMblog().getPage_info().getPage_pic().getUrl() != null) {
+//                final ImageView imageView = (ImageView) rootView.findViewById(R.id.imageView);
+//                Glide.with(rootView).load(mCards.getMblog().getPage_info().getPage_pic().getUrl()).into(imageView);
+//            }
+
+//            else if(mCards.getMblog().getPic) {
+//
+//            }
+            final ImageView imageView_head = (ImageView) rootView.findViewById(R.id.imageView_head);
+            Glide.with(rootView).load(mCards.getMblog().getUser().getProfile_image_url()).into(imageView_head);
+
+            TextView textView_user = (TextView) rootView.findViewById(R.id.textView_user);
+            textView_user.setText(mCards.getMblog().getUser().getScreen_name());
+
             return rootView;
         }
     }
@@ -188,9 +208,9 @@ public class MainActivity extends AppCompatActivity {
      * one of the sections/tabs/pages.
      */
     public class SectionsPagerAdapter extends FragmentPagerAdapter {
-        private JsonRootBean mData = null;
+        private List<Cards> mCards = new ArrayList<Cards>();
         private List<PlaceholderFragment> placeholderFragments = new ArrayList<PlaceholderFragment>();
-
+        private PlaceholderFragment currentFragment = null;
         public SectionsPagerAdapter(FragmentManager fm) {
             super(fm);
         }
@@ -200,25 +220,42 @@ public class MainActivity extends AppCompatActivity {
             // getItem is called to instantiate the fragment for the given page.
             // Return a PlaceholderFragment (defined as a static inner class below).
 //            return PlaceholderFragment.newInstance(position + 1);
+//            if (position == mCards.size() - 1)
+//                nextPage();
             return placeholderFragments.get(position);
         }
 
         public void setData(@NonNull JsonRootBean data) {
-            mData = data;
+//            mData = data;
+            mCards.clear();
+            mCards.addAll(data.getData().getCards());
+            /*
             placeholderFragments.clear();
-            for (int i=0; i<data.getData().getCards().size(); i++) {
+            for (int i=0; i<mCards.size(); i++) {
                 placeholderFragments.add(PlaceholderFragment.newInstance(i + 1,
-                        mData.getData().getCards().get(i)));
+                        mCards.get(i)));
+            }*/
+            for (int i=0; i<mCards.size(); i++) {
+                if (i < placeholderFragments.size()) {
+                    placeholderFragments.get(i).mCards = mCards.get(i);
+                }
+                else {
+                    placeholderFragments.add(PlaceholderFragment.newInstance(i + 1, mCards.get(i), i));
+                }
             }
         }
 
         @Override
         public int getCount() {
-            if (mData == null)
-                return 1;
-            else {
-                return mData.getData().getCards().size();
-            }
+            return mCards.size();
+        }
+
+        @Override
+        public void setPrimaryItem(ViewGroup container, int position, Object object) {
+            currentFragment = (PlaceholderFragment) object;
+            if (currentFragment.mCardId == mCards.size() - 1)
+                nextPage();
+            super.setPrimaryItem(container, position, object);
         }
     }
 }

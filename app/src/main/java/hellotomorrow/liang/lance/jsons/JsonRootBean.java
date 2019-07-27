@@ -27,4 +27,7 @@ public class JsonRootBean {
          return data;
      }
 
+    public JsonRootBean clone() throws CloneNotSupportedException {
+        return (JsonRootBean)super.clone();
+    }
 }
